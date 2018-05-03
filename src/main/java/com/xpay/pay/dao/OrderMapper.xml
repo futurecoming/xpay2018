@@ -103,7 +103,7 @@
     SELECT
     <include refid="orderColumns" />
     FROM bill_order
-    WHERE bill_order.store_id = #{storeId} AND update_date &gt;= #{startTime} AND update_date &lt; #{endTime} AND deleted = false ORDER BY update_date DESC
+    WHERE bill_order.store_id = #{storeId} AND create_date &gt;= #{startTime} AND create_date &lt; #{endTime} AND deleted = false ORDER BY create_date DESC
   </select>
   
   <select id="findByPayChannelAndTime" resultMap="OrderResultMap">

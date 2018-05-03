@@ -66,6 +66,8 @@
         <value>/WEB-INF/castor/ips-account-common.xml</value>
         <value>/WEB-INF/castor/ips-open-req.xml</value>
         <value>/WEB-INF/castor/ips-open-rsp.xml</value>
+        <value>/WEB-INF/castor/ips-update-req.xml</value>
+        <value>/WEB-INF/castor/ips-update-rsp.xml</value>
         <value>/WEB-INF/castor/ips-transfer-req.xml</value>
         <value>/WEB-INF/castor/ips-transfer-rsp.xml</value>
         <value>/WEB-INF/castor/ips-withdrawal-req.xml</value>
@@ -135,6 +137,15 @@
       <array>
         <value>/WEB-INF/castor/ips-account-common.xml</value>
         <value>/WEB-INF/castor/ips-open-rsp.xml</value>
+      </array>
+    </property>
+  </bean>
+
+  <bean id="userUpdateUnmarshaller" class="org.springframework.oxm.castor.CastorMarshaller">
+    <property name="mappingLocations">
+      <array>
+        <value>/WEB-INF/castor/ips-account-common.xml</value>
+        <value>/WEB-INF/castor/ips-update-rsp.xml</value>
       </array>
     </property>
   </bean>

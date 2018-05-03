@@ -9,6 +9,8 @@ import com.xpay.pay.proxy.ips.transfer.rsp.TransferRespXml;
 import com.xpay.pay.proxy.ips.useropen.req.OpenUserReqXml;
 import com.xpay.pay.proxy.ips.useropen.rsp.Body;
 import com.xpay.pay.proxy.ips.useropen.rsp.OpenUserRespXml;
+import com.xpay.pay.proxy.ips.userupdate.req.UpdateUserReqXml;
+import com.xpay.pay.proxy.ips.userupdate.rsp.UpdateUserRespXml;
 import com.xpay.pay.proxy.ips.withdrawal.req.WithdrawalReqXml;
 import com.xpay.pay.proxy.ips.withdrawal.rsp.WithdrawalRespXml;
 import com.xpay.pay.util.CryptoUtils;
@@ -44,8 +46,10 @@ import org.springframework.web.client.RestTemplate;
 public class IpsProxy {
 
   private static final String OPEN_URL = "https://ebp.ips.com.cn/fpms-access/action/user/open";
+  private static final String UPDATE_URL = "https://ebp.ips.com.cn/fpms-access/action/user/update.html";
   private static final String TRANSFER_URL = "https://ebp.ips.com.cn/fpms-access/action/trade/transfer.do";
   private static final String WITHDRAWAL_URL = "https://ebp.ips.com.cn/fpms-access/action/withdrawal/withdrawal.html";
+  private static final String QUERY_URL = "https://ebp.ips.com.cn/fpms-access/action/trade/queryOrdersList";
   private static final String MD5_SIGNATURE = "jBTSbBLE3HFBhm81FhAVVFl79TUVaDNhoQrVhBUvzv0738ZaYeLYaFNOuNVHwgbtoXhRweNdmR3dtnHTGMoSMvkGsoZTKKHKdPCe8dXUCaAZqDDAJBd8kUYdW5H3FCpy";//"wmm7x3LwJdEPgmOQxcpBugQOmQewxXjwQD5ASRbKcFq7QTK6kOolYMpG9Ov5qt8RfNwaCoXX5edKt9HWbyxL5Qr1Z32oZE85Env04BUq4bX7RCHdxhT8u0rEX5BqCDsg";
   private static final String DES_IV = "pz2E1tme";//"2BBNEs28";
   private static final String DES_KEY = "lUhBAfw8BhKZw0He7tbYRbvJ";//"oov94m6YhhFxAySqF99MoLRV";
@@ -55,6 +59,10 @@ public class IpsProxy {
   @Qualifier("userOpenUnmarshaller")
   @Autowired
   protected Unmarshaller userOpenUnmarshaller;
+
+  @Qualifier("userUpdateUnmarshaller")
+  @Autowired
+  protected Unmarshaller userUpdateUnmarshaller;
 
   @Qualifier("transferUnmarshaller")
   @Autowired
@@ -72,14 +80,13 @@ public class IpsProxy {
   RestTemplate restTemplate;
 
   public Body open(String reqIp, String merCode, String tradeCode, String userType, String customerCode,
-      String identityType,
-      String identityNo, String userName, String legalName, String legalCardNo, String mobiePhoneNo,
-      String telPhoneNo, String email, String contactAddress, String remark, String pageUrl,
-      String s2sUrl, String directSell, String stmsAcctNo, String ipsUserName) throws IOException {
-    String request = buildOpenRequest(reqIp, merCode, tradeCode, userType, customerCode,
-        identityType, identityNo,
-        userName, legalName, legalCardNo, mobiePhoneNo, telPhoneNo, email, contactAddress, remark,
-        pageUrl, s2sUrl, directSell, stmsAcctNo, ipsUserName);
+          String identityType,
+          String identityNo, String userName, String legalName, String legalCardNo, String mobiePhoneNo, String telPhoneNo, String email, String contactAddress, String remark, String pageUrl,
+          String s2sUrl, String directSell, String stmsAcctNo, String ipsUserName) throws IOException {
+    String request = buildOpenRequest("", "", "", reqIp, merCode, tradeCode, userType, customerCode,
+            identityType, identityNo,
+            userName, legalName, legalCardNo, mobiePhoneNo, telPhoneNo, email, contactAddress, remark,
+            pageUrl, s2sUrl, directSell, stmsAcctNo, ipsUserName);
     logger.info("open account request: " + request);
     MultiValueMap<String, String> keyPairs = new LinkedMultiValueMap<>();
     keyPairs.add("ipsRequest", request);
@@ -88,13 +95,11 @@ public class IpsProxy {
     headers.set("Accept", MediaType.ALL_VALUE);
     HttpEntity<?> httpEntity = new HttpEntity<>(keyPairs, headers);
     ResponseEntity<String> response = restTemplate.exchange(OPEN_URL, HttpMethod.POST, httpEntity, String.class);
-
-
     String responseXml = response.getBody();
     logger.info("open account response: " + responseXml);
     int start = responseXml.indexOf("ipsResponse=");
     StreamSource streamSource = new StreamSource(
-        new ByteArrayInputStream(responseXml.substring(start + 12).getBytes("UTF-8")));
+            new ByteArrayInputStream(responseXml.substring(start + 12).getBytes("UTF-8")));
     IpsResponse ipsResponse = (IpsResponse) userOpenUnmarshaller.unmarshal(streamSource);
     if (!"M000000".equals(ipsResponse.getRspCode())) {
       throw new GatewayException(ipsResponse.getRspCode(), ipsResponse.getRspMsg());
@@ -102,15 +107,16 @@ public class IpsProxy {
     String xml = CryptoUtils.decryptDESede(DES_KEY, DES_IV, ipsResponse.getP3DesXmlPara());
     streamSource = new StreamSource(new ByteArrayInputStream(xml.getBytes("UTF-8")));
     OpenUserRespXml openUserRespXml = (OpenUserRespXml) userOpenUnmarshaller
-        .unmarshal(streamSource);
+            .unmarshal(streamSource);
     return openUserRespXml.getBody();
   }
 
-  public String buildOpenRequest(String reqIp, String merCode, String tradeCode, String userType,
-      String customerCode, String identityType, String identityNo, String userName,
-      String legalName, String legalCardNo, String mobiePhoneNo, String telPhoneNo, String email,
-      String contactAddress, String remark, String pageUrl, String s2sUrl, String directSell,
-      String stmsAcctNo, String ipsUserName) throws IOException {
+  public String buildOpenRequest(String md5Signature, String desIv, String desKey,
+                                 String reqIp, String merCode, String tradeCode, String userType,
+                                 String customerCode, String identityType, String identityNo, String userName,
+                                 String legalName, String legalCardNo, String mobiePhoneNo, String telPhoneNo, String email,
+                                 String contactAddress, String remark, String pageUrl, String s2sUrl, String directSell,
+                                 String stmsAcctNo, String ipsUserName) throws IOException {
     com.xpay.pay.proxy.ips.useropen.req.Body body = new com.xpay.pay.proxy.ips.useropen.req.Body();
     body.setMerAcctNo(tradeCode);
     body.setUserType(userType);
@@ -135,8 +141,8 @@ public class IpsProxy {
     marshaller.marshal(body, new StreamResult(os));
     String bodyStr = new String(os.toByteArray(),"UTF-8");//TODO
     bodyStr = bodyStr.substring(bodyStr.indexOf("<body>"));
-    logger.info("signature body: " + bodyStr + MD5_SIGNATURE);
-    String signature = CryptoUtils.md5(bodyStr + MD5_SIGNATURE);
+    logger.info("signature body: " + bodyStr + md5Signature);
+    String signature = CryptoUtils.md5(bodyStr + md5Signature);
     RequestHead head = new RequestHead();
     head.setVersion("V1.0.1");
     head.setReqIp(reqIp);
@@ -150,7 +156,7 @@ public class IpsProxy {
     ipsRequest.setArgMerCode(merCode);
     os = new ByteArrayOutputStream();
     marshaller.marshal(openUserReqXml, new StreamResult(os));
-    String arg3DesXmlPara = CryptoUtils.encryptDESede(DES_KEY, DES_IV, new String(os.toByteArray(),"UTF-8"));//TODO
+    String arg3DesXmlPara = CryptoUtils.encryptDESede(desKey, desIv, new String(os.toByteArray(),"UTF-8"));//TODO
     logger.info("open account des xml[3des]:" + arg3DesXmlPara);
     ipsRequest.setArg3DesXmlPara(arg3DesXmlPara);
     os = new ByteArrayOutputStream();
@@ -158,11 +164,69 @@ public class IpsProxy {
     return new String(os.toByteArray(),"UTF-8");//TODO
   }
 
+  public com.xpay.pay.proxy.ips.userupdate.rsp.Body update(String md5Signature, String desKey, String desIv,
+                                                           String reqIp, String merCode, String customerCode, String pageUrl, String s2sUrl) throws IOException {
+    String request = buildUpdateRequest(md5Signature, desKey, desIv, reqIp, merCode, customerCode, pageUrl, s2sUrl);
+    logger.info("update account request: " + request);
+    MultiValueMap<String, String> keyPairs = new LinkedMultiValueMap<>();
+    keyPairs.add("ipsRequest", request);
+    HttpHeaders headers = new HttpHeaders();
+    headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+    headers.set("Accept", MediaType.ALL_VALUE);
+    HttpEntity<?> httpEntity = new HttpEntity<>(keyPairs, headers);
+    String response = restTemplate.exchange(UPDATE_URL, HttpMethod.POST, httpEntity, String.class).getBody();
+    logger.info("update account response: " + response);
+    int start = response.indexOf("ipsResponse=");
+    StreamSource streamSource = new StreamSource(
+            new ByteArrayInputStream(response.substring(start + 12).getBytes("UTF-8")));
+    IpsResponse ipsResponse = (IpsResponse) userUpdateUnmarshaller.unmarshal(streamSource);
+    if (!"M000000".equals(ipsResponse.getRspCode())) {
+      throw new GatewayException(ipsResponse.getRspCode(), ipsResponse.getRspMsg());
+    }
+    String xml = CryptoUtils.decryptDESede(desKey, desIv, ipsResponse.getP3DesXmlPara());
+    streamSource = new StreamSource(new ByteArrayInputStream(xml.getBytes("UTF-8")));
+    UpdateUserRespXml updateUserRespXml = (UpdateUserRespXml) userUpdateUnmarshaller
+            .unmarshal(streamSource);
+    return updateUserRespXml.getBody();
+  }
 
-  public com.xpay.pay.proxy.ips.transfer.rsp.Body transfer(String reqIp, String merBillNo,
-      String merCode, String merAcctNo,
-      String customerCode, String transferAmount, String collectionItemName, String remark)
-      throws IOException {
+  public String buildUpdateRequest(String md5Signature, String desKey, String desIv,
+                                   String reqIp, String merCode, String customerCode, String pageUrl, String s2sUrl)throws IOException {
+    com.xpay.pay.proxy.ips.userupdate.req.Body body = new com.xpay.pay.proxy.ips.userupdate.req.Body();
+    body.setCustomerCode(customerCode);
+    body.setPageUrl(pageUrl);
+    body.setS2sUrl(s2sUrl);
+
+    ByteArrayOutputStream os = new ByteArrayOutputStream();
+    marshaller.marshal(body, new StreamResult(os));
+    String bodyStr = new String(os.toByteArray(),"UTF-8");//TODO
+    bodyStr = bodyStr.substring(bodyStr.indexOf("<body>"));
+    logger.info("signature body: " + bodyStr + md5Signature);
+    String signature = CryptoUtils.md5(bodyStr + md5Signature);
+    RequestHead head = new RequestHead();
+    head.setVersion("V1.0.1");
+    head.setReqIp(reqIp);
+    head.setReqDate(TimeUtils.formatTime(new Date(), "yyyy-MM-dd HH:mm:ss"));
+    head.setSignature(signature);
+    UpdateUserReqXml updateUserReqXml = new UpdateUserReqXml();
+
+    IpsRequest ipsRequest = new IpsRequest();
+    ipsRequest.setArgMerCode(merCode);
+    os = new ByteArrayOutputStream();
+    marshaller.marshal(updateUserReqXml, new StreamResult(os));
+    String arg3DesXmlPara = CryptoUtils.encryptDESede(desKey, desIv, os.toString());
+    logger.info("update account des xml[3des]:" + arg3DesXmlPara);
+    ipsRequest.setArg3DesXmlPara(arg3DesXmlPara);
+    os = new ByteArrayOutputStream();
+    marshaller.marshal(ipsRequest, new StreamResult(os));
+    return new String(os.toByteArray(),"UTF-8");//TODO
+  }
+
+  public com.xpay.pay.proxy.ips.transfer.rsp.Body transfer(String md5Signature, String desIv, String desKey,
+                                                           String reqIp, String merBillNo,
+                                                           String merCode, String merAcctNo,
+                                                           String customerCode, String transferAmount, String collectionItemName, String remark)
+          throws IOException {
     com.xpay.pay.proxy.ips.transfer.req.Body body = new com.xpay.pay.proxy.ips.transfer.req.Body();
     body.setMerBillNo(merBillNo);
     body.setTransferType("2");
@@ -176,8 +240,8 @@ public class IpsProxy {
 
     String bodyStr = new String(os.toByteArray(),"UTF-8");//TODO os.toString();
     bodyStr = bodyStr.substring(bodyStr.indexOf("<body>"));
-    logger.info("signature body: " + bodyStr + MD5_SIGNATURE);
-    String signature = CryptoUtils.md5(bodyStr + MD5_SIGNATURE);
+    logger.info("signature body: " + bodyStr + md5Signature);
+    String signature = CryptoUtils.md5(bodyStr + md5Signature);
     RequestHead head = new RequestHead();
     head.setVersion("V1.0.1");
     head.setReqIp(reqIp);
@@ -190,7 +254,7 @@ public class IpsProxy {
     ipsRequest.setArgMerCode(merCode);
     os = new ByteArrayOutputStream();
     marshaller.marshal(transferReqXml, new StreamResult(os));
-    String arg3DesXmlPara = CryptoUtils.encryptDESede(DES_KEY, DES_IV, new String(os.toByteArray(),"UTF-8"));//TODO
+    String arg3DesXmlPara = CryptoUtils.encryptDESede(desKey, desIv, new String(os.toByteArray(),"UTF-8"));//TODO
     logger.info("transfer des xml[3des]:" + arg3DesXmlPara);
     ipsRequest.setArg3DesXmlPara(arg3DesXmlPara);
     os = new ByteArrayOutputStream();
@@ -204,29 +268,29 @@ public class IpsProxy {
     headers.set("Accept", MediaType.ALL_VALUE);
     HttpEntity<?> httpEntity = new HttpEntity<>(keyPairs, headers);
     String response = restTemplate.exchange(TRANSFER_URL, HttpMethod.POST, httpEntity, String.class)
-        .getBody();
+            .getBody();
     logger.info("transfer response: " + response);
     StreamSource streamSource = new StreamSource(
-        new ByteArrayInputStream(response.getBytes("UTF-8")));
+            new ByteArrayInputStream(response.getBytes("UTF-8")));
     IpsResponse ipsResponse = (IpsResponse) transferUnmarshaller.unmarshal(streamSource);
     if (!"M000000".equals(ipsResponse.getRspCode())) {
       throw new GatewayException(ipsResponse.getRspCode(), ipsResponse.getRspMsg());
     }
-    String xml = CryptoUtils.decryptDESede(DES_KEY, DES_IV, ipsResponse.getP3DesXmlPara());
+    String xml = CryptoUtils.decryptDESede(desKey, desIv, ipsResponse.getP3DesXmlPara());
     logger.info("transfer body xml: " + xml);
     streamSource = new StreamSource(new ByteArrayInputStream(xml.getBytes("UTF-8")));
     TransferRespXml transferRespXml = (TransferRespXml) transferUnmarshaller
-        .unmarshal(streamSource);
+            .unmarshal(streamSource);
     return transferRespXml.getBody();
   }
 
 
   public com.xpay.pay.proxy.ips.withdrawal.rsp.Body withdrawal(String reqIp, String merBillNo,
-      String merCode, String customerCode, String pageUrl, String s2sUrl, String bankCard,
-      String bankCode)
-      throws IOException {
-    String request = buildWithdrawalRequest(reqIp, merBillNo, merCode, customerCode, pageUrl,
-        s2sUrl, bankCard, bankCode);
+    String merCode, String customerCode, String pageUrl, String s2sUrl, String bankCard,
+    String bankCode)
+     throws IOException {
+    String request = buildWithdrawalRequest("", "", "", reqIp, merBillNo, merCode, customerCode, pageUrl,
+    s2sUrl, bankCard, bankCode);
     logger.info("withdrawal request: " + request);
     MultiValueMap<String, String> keyPairs = new LinkedMultiValueMap<>();
     keyPairs.add("ipsRequest", request);
@@ -235,11 +299,11 @@ public class IpsProxy {
     headers.set("Accept", MediaType.ALL_VALUE);
     HttpEntity<?> httpEntity = new HttpEntity<>(keyPairs, headers);
     String response = restTemplate.exchange(WITHDRAWAL_URL, HttpMethod.POST, httpEntity, String.class)
-        .getBody();
+            .getBody();
     logger.info("withdrawal response: " + response);
     int start = response.indexOf("ipsResponse=");
     StreamSource streamSource = new StreamSource(
-        new ByteArrayInputStream(response.substring(start + 12).getBytes("UTF-8")));
+            new ByteArrayInputStream(response.substring(start + 12).getBytes("UTF-8")));
     IpsResponse ipsResponse = (IpsResponse) withdrawalUnmarshaller.unmarshal(streamSource);
     if (!"M000000".equals(ipsResponse.getRspCode())) {
       throw new GatewayException(ipsResponse.getRspCode(), ipsResponse.getRspMsg());
@@ -247,13 +311,14 @@ public class IpsProxy {
     String xml = CryptoUtils.decryptDESede(DES_KEY, DES_IV, ipsResponse.getP3DesXmlPara());
     streamSource = new StreamSource(new ByteArrayInputStream(xml.getBytes("UTF-8")));
     WithdrawalRespXml withdrawalRespXml = (WithdrawalRespXml) withdrawalUnmarshaller
-        .unmarshal(streamSource);
+            .unmarshal(streamSource);
     return withdrawalRespXml.getBody();
   }
 
-  public String buildWithdrawalRequest(String reqIp, String merBillNo, String merCode,
-      String customerCode, String pageUrl, String s2sUrl, String bankCard, String bankCode)
-      throws IOException {
+  public String buildWithdrawalRequest(String md5Signature, String desIv, String desKey,
+                                       String reqIp, String merBillNo, String merCode,
+                                       String customerCode, String pageUrl, String s2sUrl, String bankCard, String bankCode)
+          throws IOException {
     com.xpay.pay.proxy.ips.withdrawal.req.Body body = new com.xpay.pay.proxy.ips.withdrawal.req.Body();
     body.setMerBillNo(merBillNo);
     body.setCustomerCode(customerCode);
@@ -266,8 +331,8 @@ public class IpsProxy {
 
     String bodyStr = os.toString();
     bodyStr = bodyStr.substring(bodyStr.indexOf("<body>"));
-    logger.info("signature body: " + bodyStr + MD5_SIGNATURE);
-    String signature = CryptoUtils.md5(bodyStr + MD5_SIGNATURE);
+    logger.info("signature body: " + bodyStr + md5Signature);
+    String signature = CryptoUtils.md5(bodyStr + md5Signature);
     RequestHead head = new RequestHead();
     head.setVersion("V1.0.1");
     head.setReqIp(reqIp);
@@ -280,7 +345,7 @@ public class IpsProxy {
     ipsRequest.setArgMerCode(merCode);
     os = new ByteArrayOutputStream();
     marshaller.marshal(withdrawalReqXml, new StreamResult(os));
-    String arg3DesXmlPara = CryptoUtils.encryptDESede(DES_KEY, DES_IV, os.toString());
+    String arg3DesXmlPara = CryptoUtils.encryptDESede(desKey, desIv, os.toString());
     logger.info("withdrawal des xml[3des]:" + arg3DesXmlPara);
     ipsRequest.setArg3DesXmlPara(arg3DesXmlPara);
     os = new ByteArrayOutputStream();
@@ -296,7 +361,7 @@ public class IpsProxy {
       String bankCode) throws IOException {
     TransferAndWithdrawalResult result = new TransferAndWithdrawalResult();
     result.setSuccess(false);
-    com.xpay.pay.proxy.ips.transfer.rsp.Body transferBody = transfer(reqIp, transferMerBillNo,
+    com.xpay.pay.proxy.ips.transfer.rsp.Body transferBody = transfer("", "", "", reqIp, transferMerBillNo,
         merCode, merAcctNo, customerCode, transferAmount, collectionItemName, remark);
     if ("10".equals(transferBody.getTradeState())) {
       result.setTransferIpsBillNo(transferBody.getIpsBillNo());

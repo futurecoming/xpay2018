@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapping PUBLIC "-//EXOLAB/Castor Mapping DTD Version 1.0//EN"
+  "http://castor.org/mapping.dtd">
+
+<mapping>
+
+  <class name="com.xpay.pay.proxy.ips.userupdate.req.UpdateUserReqXml">
+    <map-to xml="updateUserReqXml"/>
+    <field name="head" nillable="true" required="true" type="com.xpay.pay.proxy.ips.common.RequestHead">
+      <bind-xml name="head" node="element"/>
+    </field>
+    <field name="body" nillable="true" required="true" type="com.xpay.pay.proxy.ips.userupdate.req.Body">
+      <bind-xml name="body" node="element"/>
+    </field>
+  </class>
+
+  <class name="com.xpay.pay.proxy.ips.userupdate.req.Body">
+    <map-to xml="body"/>
+    <field name="customerCode" nillable="true" required="true" type="string">
+      <bind-xml name="customerCode" node="element"/>
+    </field>
+    <field name="pageUrl" nillable="true" required="true" type="string">
+      <bind-xml name="pageUrl" node="element"/>
+    </field>
+    <field name="s2sUrl" nillable="true" required="true" type="string">
+      <bind-xml name="s2sUrl" node="element"/>
+    </field>
+  </class>
+
+</mapping>

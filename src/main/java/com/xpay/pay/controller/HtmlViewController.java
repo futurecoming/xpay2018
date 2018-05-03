@@ -1,6 +1,7 @@
 package com.xpay.pay.controller;
 
 import com.xpay.pay.model.Order;
+import com.xpay.pay.model.Store;
 import com.xpay.pay.model.StoreChannel.PaymentGateway;
 import com.xpay.pay.proxy.PaymentRequest;
 import com.xpay.pay.proxy.ips.IpsProxy;
@@ -8,6 +9,7 @@ import com.xpay.pay.proxy.ips.quick.IpsQuickProxy;
 import com.xpay.pay.proxy.ips.wxpay.IpsWxProxy;
 import com.xpay.pay.proxy.ips.transfer.rsp.Body;
 import com.xpay.pay.service.OrderService;
+import com.xpay.pay.service.StoreService;
 import com.xpay.pay.service.PaymentService;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -39,6 +41,9 @@ public class HtmlViewController {
   private OrderService orderService;
 
   @Autowired
+  private StoreService storeService;
+
+  @Autowired
   private IpsQuickProxy ipsQuickProxy;
 
   @Autowired
@@ -49,9 +54,6 @@ public class HtmlViewController {
 
   @Autowired
   private IpsProxy ipsProxy;
-  
-  private static String merCode = "205531";
-  private static String account = "2055310011";
 
   @RequestMapping(value = "/{orderNo}", method = RequestMethod.GET)
   public ModelAndView pay(@PathVariable("orderNo") String orderNo) {
@@ -78,10 +80,13 @@ public class HtmlViewController {
   }
 
   @RequestMapping(value = "/ips/open", method = RequestMethod.GET)
-  public ModelAndView open(@RequestParam("customerCode") String customerCode,
-      @RequestParam("identityNo") String identityNo, @RequestParam("userName") String userName,
-      @RequestParam("mobileNo") String mobileNo, HttpServletRequest request)
-      throws IOException {
+  public ModelAndView open(@RequestParam("merCode") String merCode,@RequestParam("merAcctNo") String merAcctNo,
+                           @RequestParam("md5Signature") String md5Signature,
+                           @RequestParam("desIv") String desIv, @RequestParam("desKey") String desKey,
+                           @RequestParam("customerCode") String customerCode,
+                           @RequestParam("identityNo") String identityNo, @RequestParam("userName") String userName,
+                           @RequestParam("mobileNo") String mobileNo, HttpServletRequest request)
+          throws IOException {
 	/* try{
 		 if(userName != null && !"".equals(userName)){
 			   userName = URLDecoder.decode(userName,"UTF-8");
@@ -89,24 +94,41 @@ public class HtmlViewController {
 	 }catch(Exception e){
 		 logger.info("URLdecode throw exception>>",e);
 	 } */
-    logger.info("ips>open>"+merCode+","+account+","+customerCode+","+userName+","+identityNo);
     String requestXml = ipsProxy
-        .buildOpenRequest(request.getRemoteAddr(), merCode, account, "2", customerCode, "1",
-            identityNo, userName, "", "",
-            mobileNo, "", "", "", "", "http://www.wfpay.xyz", "http://www.wfpay.xyz", "", "",
-            "");
+            .buildOpenRequest(md5Signature, desIv, desKey,
+                    request.getRemoteAddr(), merCode, merAcctNo, "2", customerCode, "1",
+                    identityNo, userName, "", "",
+                    mobileNo, "", "", "", "", "http://www.zmpay.top", "http://www.zmpay.top", "", "",
+                    "");
 
     Map<String, String> model = new HashMap<>();
     model.put("ipsRequest", requestXml);
     return new ModelAndView("ips_open", model);
   }
-  
-  @RequestMapping(value = "/ips/transfer", method = RequestMethod.GET)
-  public ModelAndView transfer(@RequestParam("customerCode") String customerCode,
-      @RequestParam("transferAmount") String transferAmount, 
-      @RequestParam("collectionItemName") String collectionItemName, 
-      HttpServletRequest request)
-      throws IOException {
+
+  @RequestMapping(value = "/ips/update", method = RequestMethod.GET)
+  public ModelAndView open(@RequestParam("md5Signature") String md5Signature, @RequestParam("desKey") String desKey, @RequestParam("desIv") String desIv,
+                           @RequestParam("merCode") String merCode, @RequestParam("customerCode") String customerCode, HttpServletRequest request)
+          throws IOException {
+
+    String requestXml = ipsProxy
+            .buildUpdateRequest(md5Signature, desKey, desIv, request.getRemoteAddr(), merCode, customerCode, "http://www.zmpay.top", "http://www.zmpay.top");
+
+    Map<String, String> model = new HashMap<>();
+    model.put("ipsRequest", requestXml);
+    return new ModelAndView("ips_update", model);
+  }
+
+  @RequestMapping(value = "/ips/transfer/{code}", method = RequestMethod.GET)
+  public ModelAndView transfer(@PathVariable String code,
+                               @RequestParam("merCode") String merCode,@RequestParam("merAcctNo") String merAcctNo,
+                               @RequestParam("md5Signature") String md5Signature,
+                               @RequestParam("desIv") String desIv, @RequestParam("desKey") String desKey,
+                               @RequestParam("customerCode") String customerCode,
+                               @RequestParam("transferAmount") String transferAmount,
+                               @RequestParam("collectionItemName") String collectionItemName,
+                               HttpServletRequest request)
+          throws IOException {
 	  /*try{
 			 if(collectionItemName != null && !"".equals(collectionItemName)){
 				 collectionItemName = URLDecoder.decode(collectionItemName,"UTF-8");
@@ -114,7 +136,18 @@ public class HtmlViewController {
 		 }catch(Exception e){
 			 
 		 }*/
-    Body transferResponse = ipsProxy.transfer(request.getRemoteAddr(), "", merCode, account, customerCode, transferAmount, collectionItemName, "");
+    logger.info("collectionItemName :" + collectionItemName);
+    Store store = storeService.findByCode(code);
+    double quota = (1-store.getBailPercentage()/100) * store.getLastTransSum() * 0.9;
+    if(Float.parseFloat(transferAmount) > quota){
+      logger.info("超出限额 quota :" + quota);
+      Map<String, String> model = new HashMap<>();
+      model.put("resp", "超出限额！");
+
+      return new ModelAndView("ips_transfer", model);
+    }
+
+    Body transferResponse = ipsProxy.transfer(md5Signature, desIv, desKey, request.getRemoteAddr(), "", merCode, merAcctNo, customerCode, transferAmount, collectionItemName, "");
 
     Map<String, String> model = new HashMap<>();
     model.put("resp", transferResponse.getTradeState());
@@ -151,14 +184,17 @@ public class HtmlViewController {
    * @throws IOException
    */
   @RequestMapping(value = "/ips/withdraw", method = RequestMethod.GET)
-  public ModelAndView withdrawal(@RequestParam("customerCode") String customerCode,
-      @RequestParam("bankCard") String bankCard, @RequestParam("bankCode") String bankCode,
-      HttpServletRequest request)
-      throws IOException {
+  public ModelAndView withdrawal(@RequestParam("merCode") String merCode,
+                                 @RequestParam("md5Signature") String md5Signature,
+                                 @RequestParam("desIv") String desIv, @RequestParam("desKey") String desKey,
+                                 @RequestParam("customerCode") String customerCode,
+                                 @RequestParam("bankCard") String bankCard, @RequestParam("bankCode") String bankCode,
+                                 HttpServletRequest request)
+          throws IOException {
 
     String requestXml = ipsProxy
-        .buildWithdrawalRequest(request.getRemoteAddr(), "", merCode, customerCode,
-            "http://www.wfpay.xyz", "http://www.wfpay.xyz", bankCard, bankCode);
+            .buildWithdrawalRequest(md5Signature, desIv, desKey, request.getRemoteAddr(), "", merCode, customerCode,
+                    "http://www.zmpay.top", "http://www.zmpay.top", bankCard, bankCode);
 
     Map<String, String> model = new HashMap<>();
     model.put("ipsRequest", requestXml);

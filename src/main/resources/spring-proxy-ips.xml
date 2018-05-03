@@ -51,25 +51,27 @@
   <bean id="ipsMarshaller" class="org.springframework.oxm.castor.CastorMarshaller">
     <property name="mappingLocations">
       <array>
-        <value>castor/ips-common.xml</value>
-        <value>castor/ips-notify.xml</value>
-        <value>castor/ips-query-merbillno-req.xml</value>
-        <value>castor/ips-query-merbillno-rsp.xml</value>
-        <value>castor/ips-quick-req.xml</value>
-        <value>castor/ips-wxpay-req.xml</value>
-        <value>castor/ips-refund-req.xml</value>
-        <value>castor/ips-refund-rsp.xml</value>
-        <value>castor/ips-scan-req.xml</value>
-        <value>castor/ips-scan-rsp.xml</value>
-        <value>castor/ips-query-trade-req.xml</value>
-        <value>castor/ips-query-trade-rsp.xml</value>
-        <value>castor/ips-account-common.xml</value>
-        <value>castor/ips-open-req.xml</value>
-        <value>castor/ips-open-rsp.xml</value>
-        <value>castor/ips-transfer-req.xml</value>
-        <value>castor/ips-transfer-rsp.xml</value>
-        <value>castor/ips-withdrawal-req.xml</value>
-        <value>castor/ips-withdrawal-rsp.xml</value>
+        <value>/WEB-INF/castor/ips-common.xml</value>
+        <value>/WEB-INF/castor/ips-notify.xml</value>
+        <value>/WEB-INF/castor/ips-query-merbillno-req.xml</value>
+        <value>/WEB-INF/castor/ips-query-merbillno-rsp.xml</value>
+        <value>/WEB-INF/castor/ips-quick-req.xml</value>
+        <value>/WEB-INF/castor/ips-wxpay-req.xml</value>
+        <value>/WEB-INF/castor/ips-refund-req.xml</value>
+        <value>/WEB-INF/castor/ips-refund-rsp.xml</value>
+        <value>/WEB-INF/castor/ips-scan-req.xml</value>
+        <value>/WEB-INF/castor/ips-scan-rsp.xml</value>
+        <value>/WEB-INF/castor/ips-query-trade-req.xml</value>
+        <value>/WEB-INF/castor/ips-query-trade-rsp.xml</value>
+        <value>/WEB-INF/castor/ips-account-common.xml</value>
+        <value>/WEB-INF/castor/ips-open-req.xml</value>
+        <value>/WEB-INF/castor/ips-open-rsp.xml</value>
+        <value>/WEB-INF/castor/ips-update-req.xml</value>
+        <value>/WEB-INF/castor/ips-update-rsp.xml</value>
+        <value>/WEB-INF/castor/ips-transfer-req.xml</value>
+        <value>/WEB-INF/castor/ips-transfer-rsp.xml</value>
+        <value>/WEB-INF/castor/ips-withdrawal-req.xml</value>
+        <value>/WEB-INF/castor/ips-withdrawal-rsp.xml</value>
       </array>
     </property>
     <property name="suppressNamespaces" value="true" />
@@ -79,8 +81,8 @@
   <bean id="notifyUnmarshaller" class="org.springframework.oxm.castor.CastorMarshaller">
     <property name="mappingLocations">
       <array>
-        <value>castor/ips-common.xml</value>
-        <value>castor/ips-notify.xml</value>
+        <value>/WEB-INF/castor/ips-common.xml</value>
+        <value>/WEB-INF/castor/ips-notify.xml</value>
       </array>
     </property>
   </bean>
@@ -88,8 +90,8 @@
   <bean id="ipsWxNotifyUnmarshaller" class="org.springframework.oxm.castor.CastorMarshaller">
     <property name="mappingLocations">
       <array>
-        <value>castor/ips-common.xml</value>
-        <value>castor/ips-wxnotify.xml</value>
+        <value>/WEB-INF/castor/ips-common.xml</value>
+        <value>/WEB-INF/castor/ips-wxnotify.xml</value>
       </array>
     </property>
   </bean>
@@ -97,8 +99,8 @@
   <bean id="queryUnmarshaller" class="org.springframework.oxm.castor.CastorMarshaller">
     <property name="mappingLocations">
       <array>
-        <value>castor/ips-common.xml</value>
-        <value>castor/ips-query-merbillno-rsp.xml</value>
+        <value>/WEB-INF/castor/ips-common.xml</value>
+        <value>/WEB-INF/castor/ips-query-merbillno-rsp.xml</value>
       </array>
     </property>
   </bean>
@@ -106,8 +108,8 @@
   <bean id="scanUnmarshaller" class="org.springframework.oxm.castor.CastorMarshaller">
     <property name="mappingLocations">
       <array>
-        <value>castor/ips-common.xml</value>
-        <value>castor/ips-scan-rsp.xml</value>
+        <value>/WEB-INF/castor/ips-common.xml</value>
+        <value>/WEB-INF/castor/ips-scan-rsp.xml</value>
       </array>
     </property>
   </bean>
@@ -115,8 +117,8 @@
   <bean id="refundUnmarshaller" class="org.springframework.oxm.castor.CastorMarshaller">
     <property name="mappingLocations">
       <array>
-        <value>castor/ips-common.xml</value>
-        <value>castor/ips-refund-rsp.xml</value>
+        <value>/WEB-INF/castor/ips-common.xml</value>
+        <value>/WEB-INF/castor/ips-refund-rsp.xml</value>
       </array>
     </property>
   </bean>
@@ -124,8 +126,8 @@
   <bean id="tradeQueryUnmarshaller" class="org.springframework.oxm.castor.CastorMarshaller">
     <property name="mappingLocations">
       <array>
-        <value>castor/ips-common.xml</value>
-        <value>castor/ips-query-trade-rsp.xml</value>
+        <value>/WEB-INF/castor/ips-common.xml</value>
+        <value>/WEB-INF/castor/ips-query-trade-rsp.xml</value>
       </array>
     </property>
   </bean>
@@ -133,8 +135,17 @@
   <bean id="userOpenUnmarshaller" class="org.springframework.oxm.castor.CastorMarshaller">
     <property name="mappingLocations">
       <array>
-        <value>castor/ips-account-common.xml</value>
-        <value>castor/ips-open-rsp.xml</value>
+        <value>/WEB-INF/castor/ips-account-common.xml</value>
+        <value>/WEB-INF/castor/ips-open-rsp.xml</value>
+      </array>
+    </property>
+  </bean>
+
+  <bean id="userUpdateUnmarshaller" class="org.springframework.oxm.castor.CastorMarshaller">
+    <property name="mappingLocations">
+      <array>
+        <value>/WEB-INF/castor/ips-account-common.xml</value>
+        <value>/WEB-INF/castor/ips-update-rsp.xml</value>
       </array>
     </property>
   </bean>
@@ -142,8 +153,8 @@
   <bean id="transferUnmarshaller" class="org.springframework.oxm.castor.CastorMarshaller">
     <property name="mappingLocations">
       <array>
-        <value>castor/ips-account-common.xml</value>
-        <value>castor/ips-transfer-rsp.xml</value>
+        <value>/WEB-INF/castor/ips-account-common.xml</value>
+        <value>/WEB-INF/castor/ips-transfer-rsp.xml</value>
       </array>
     </property>
   </bean>
@@ -151,8 +162,8 @@
   <bean id="withdrawalUnmarshaller" class="org.springframework.oxm.castor.CastorMarshaller">
     <property name="mappingLocations">
       <array>
-        <value>castor/ips-account-common.xml</value>
-        <value>castor/ips-withdrawal-rsp.xml</value>
+        <value>/WEB-INF/castor/ips-account-common.xml</value>
+        <value>/WEB-INF/castor/ips-withdrawal-rsp.xml</value>
       </array>
     </property>
   </bean>
