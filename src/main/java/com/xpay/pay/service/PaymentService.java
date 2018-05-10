@@ -86,7 +86,6 @@ public class PaymentService {
 			order.setSubChannelId(newStoreChannel.getSubChannel().getId());
 			logger.info("订单>>"+order.getOrderNo()+" 使用子渠道:"+newStoreChannel.getSubChannel().getId());
 		}
-		
 		order.setPayChannel(channel);
 		order.setDeviceId(deviceId);
 		order.setIp(ip);
@@ -286,7 +285,7 @@ public class PaymentService {
 		request.setTotalFee(order.getTotalFee());
 		request.setAttach(order.getAttach());
 		request.setOrderNo(order.getOrderNo());
-//		request.setUserOpenId(order.getDeviceId());
+		request.setUserOpenId(order.getDeviceId());
 		request.setNotifyUrl(DEFAULT_NOTIFY_URL+order.getStoreChannel().getPaymentGateway().toString().toLowerCase());
 
 		PaymentGateway gateway = order.getStoreChannel().getPaymentGateway();

@@ -203,6 +203,7 @@ public class StoreChannel implements Cloneable{
 		IPSWX("pay","query", "refund"),
 		HM("pay","query", ""),
 		TXF("", "query", "refund"),
+		TFB("pay", "query", "refund"),
 		CHINA_PNR("pay","query", "refund")
 		;
 		
