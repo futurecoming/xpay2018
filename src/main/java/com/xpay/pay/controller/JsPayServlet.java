@@ -1,6 +1,7 @@
 package com.xpay.pay.controller;
 
 import java.io.IOException;
+import java.net.URLEncoder;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -24,6 +25,7 @@ import com.xpay.pay.proxy.chinaumswap.ChinaUmsWapProxy;
 import com.xpay.pay.proxy.kekepay.KekePayProxy;
 import com.xpay.pay.proxy.miaofu.MiaoFuProxy;
 import com.xpay.pay.proxy.txf.TxfProxy;
+import com.xpay.pay.proxy.tfb.TfbProxy;
 import com.xpay.pay.proxy.upay.UPayProxy;
 import com.xpay.pay.service.OrderService;
 import com.xpay.pay.service.PaymentService;
@@ -48,6 +50,8 @@ public class JsPayServlet extends HttpServlet {
   protected KekePayProxy kekePayProxy;
   @Autowired
   protected TxfProxy txfProxy;
+  @Autowired
+  protected TfbProxy tfbProxy;
 
   @Override
   public void init(ServletConfig config) throws ServletException {
@@ -136,6 +140,20 @@ public class JsPayServlet extends HttpServlet {
 	        response.setHeader("Content-type", "text/html;charset=UTF-8");
 	        response.sendRedirect(txfProxy.getJsUrl(paymentRequest));
     	}
+    } else if(PaymentGateway.TFB.equals(order.getStoreChannel().getPaymentGateway())) {
+        PaymentRequest paymentRequest = paymentService.toPaymentRequest(order);
+        String jsUrl = tfbProxy.getJsUrl(paymentRequest);
+        String cipherData = jsUrl.substring(jsUrl.lastIndexOf("=") + 1);
+        String  encodeCipherData = URLEncoder.encode(cipherData, "GBK");
+        jsUrl = jsUrl.replace(cipherData, encodeCipherData);
+        String cardType = request.getParameter("cardType");
+        String bankId = request.getParameter("bankId");
+        paymentRequest.setCardType(cardType);
+        paymentRequest.setBankId(bankId);
+        response.setCharacterEncoding("utf-8");
+        response.setHeader("Content-type", "text/html;charset=UTF-8");
+
+        response.sendRedirect(jsUrl);
     } else {
         response.sendError(400, "无效订单");
     }
