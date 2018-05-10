@@ -108,7 +108,7 @@ public class OrderService {
 	}
 	
 	private static final long timeWindowStart = AppConfig.XPayConfig.getProperty("time.window.start", 60000L);
-	private static final long timeWindoEnd = AppConfig.XPayConfig.getProperty("time.window.end", -30000L);
+	private static final long timeWindoEnd = AppConfig.XPayConfig.getProperty("time.window.end", -12000L);
 	public Order findActiveByOrderTime(String extStoreCode, String extOrderNo, Float amount, String subject, Date orderTime) {
 		Date startTime = TimeUtils.timeBefore(orderTime, timeWindowStart);
 		Date endTime = TimeUtils.timeBefore(orderTime, timeWindoEnd);
