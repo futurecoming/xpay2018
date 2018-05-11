@@ -201,6 +201,7 @@ public class StoreChannel implements Cloneable{
 		IPSSCAN("pay","query", "refund"),
 		IPSQUICK("pay","query", "refund"),
 		IPSWX("pay","query", "refund"),
+		IPSV2QUICK("pay","query", ""),
 		HM("pay","query", ""),
 		TXF("", "query", "refund"),
 		TFB("pay", "query", "refund"),

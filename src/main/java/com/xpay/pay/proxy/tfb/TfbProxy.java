@@ -243,7 +243,7 @@ public class TfbProxy implements IPaymentProxy {
         tfbRequest.setAttach(request.getAttach());
         tfbRequest.setUserType("1");
         tfbRequest.setBankAcctype("01");
-        tfbRequest.setBankAccno("6225880217556779");
+        tfbRequest.setBankAccno("6222021001123984277");
         tfbRequest.setEncodeType(encode_type);
         return tfbRequest;
     }

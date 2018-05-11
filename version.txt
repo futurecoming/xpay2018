@@ -1,7 +1,8 @@
 branch=refs/heads/master
-buildTimestamp=2018-05-03 08:48:38 +0000
-buildVersion=1198
-commitId=unknown
+buildTimestamp=2018-05-11 08:05:56 +0000
+buildVersion=1232
+commitId=ea3bfc16f0ee3235608f736d2e720da2fca82bab
+
 hostname=DESKTOP-QU0F2NU
 isSnapshot=true
 javaVersion=1.8.0_172
@@ -11,4 +12,4 @@ osName=Windows 10
 osVersion=10.0
 project=XPAY
 username=admin
-version=0.1.1198
+version=0.1.1232

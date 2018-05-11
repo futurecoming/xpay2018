@@ -20,6 +20,7 @@ import com.xpay.pay.proxy.kekepay.KekePayProxy;
 import com.xpay.pay.proxy.miaofu.MiaoFuProxy;
 import com.xpay.pay.proxy.qftx.mp.QftxMpProxy;
 import com.xpay.pay.proxy.txf.TxfProxy;
+import com.xpay.pay.proxy.tfb.TfbProxy;
 import com.xpay.pay.proxy.upay.UPayProxy;
 
 @Service
@@ -55,6 +56,8 @@ public class PaymentProxyFactory {
   private IpsQuickProxy ipsQuickProxy;
   @Autowired
   private TxfProxy txfProxy;
+  @Autowired
+  private TfbProxy tfbProxy;
   @Autowired
   private IpsWxProxy ipsWxProxy;
   @Autowired
@@ -93,6 +96,8 @@ public class PaymentProxyFactory {
         return ipsQuickProxy;
       case TXF:
           return txfProxy;
+      case TFB:
+        return tfbProxy;
       case IPSWX:
         return ipsWxProxy;
       case HM:

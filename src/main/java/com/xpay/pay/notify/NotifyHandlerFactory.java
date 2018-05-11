@@ -31,6 +31,8 @@ public class NotifyHandlerFactory {
   @Autowired
   TxfNotifyHandler txfNotifyHandler;
   @Autowired
+  TfbNotifyHandler tfbNotifyHandler;
+  @Autowired
   IpsWxNotifyHandler ipsWxNotifyHandler;
   @Autowired
   HmNotifyHandler hmNotifyHandler;
@@ -67,7 +69,9 @@ public class NotifyHandlerFactory {
       return suPayNotifyHandler;
     } else if (uri.contains(PaymentGateway.TXF.name().toLowerCase())) {
         return txfNotifyHandler;
-    } else if (uri.contains(PaymentGateway.IPSWX.name().toLowerCase())) {
+    } else if (uri.contains(PaymentGateway.TFB.name().toLowerCase())) {
+        return tfbNotifyHandler;
+	} else if (uri.contains(PaymentGateway.IPSWX.name().toLowerCase())) {
       return ipsWxNotifyHandler;
     } else if (uri.contains(PaymentGateway.HM.name().toLowerCase())) {
       return hmNotifyHandler;
